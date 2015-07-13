@@ -1,0 +1,40 @@
+﻿@{
+    ViewBag.Title = "Index";
+}
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Amazon product search</title>
+        <link href="~/css/style.css" rel="stylesheet">
+         <link href="~/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body>
+       
+        <div id="search">
+            <div id="title">
+                <h2>Amazon Product Search</h2>
+            </div>
+
+            <div id="search-form"  >
+                <form method="post" action="/ProductSearch/Search">
+                    <div class="col-xs-5 selectContainer">
+                    <select id="indexSelection" name="searchIndex" class="form-control">
+                        @foreach (string value in ViewBag.SearchIndexValues)
+                        {
+                            <option value="@value">@value</option>
+                        }
+                    </select>
+                    </div>
+                    <div class="input-group">
+                    <input id="searchKeywords" type="text" name="searchKeywords" class="form-control" placeholder="Search for..." />
+                    <input id="pageNr" type="hidden" name="pageNr" value="0" />
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="submit" value="Search">Search!</button>
+                       </span>
+                    
+                    </div>
+                </form>
+            </div>
+        </div>
+    </body>
+</html>

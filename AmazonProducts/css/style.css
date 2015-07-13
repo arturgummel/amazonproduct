@@ -1,0 +1,34 @@
+
+td:first-child, td:last-child, #currentcur {
+font-weight:bold;    
+}
+th:nth-child(2) {
+text-align:center;    
+    }
+#searchForm,#title {
+
+margin-left:20px;    
+    }
+#logo {
+margin-top:20px;    
+margin-left:20px;
+    }
+#errorMessage {
+color:red;
+}
+#resulttext,#currentcur{
+margin-left:20px;  
+}
+
+#currentcur{
+float:left;
+}
+#showcur{
+width:20%;
+margin-left:-20px;
+}
+#search {
+                text-align:center;
+                width: 800px;
+                margin:auto;    
+            }

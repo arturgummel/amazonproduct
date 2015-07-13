@@ -1,0 +1,158 @@
+﻿@model AmazonProducts.Models.ProductSearch
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Amazon Search</title>
+        <link href="~/css/style.css" rel="stylesheet">
+        <link href="~/css/bootstrap.min.css" rel="stylesheet">
+        <script type="text/javascript" src="~/js/jquery-1.8.3.min.js"></script>
+    </head>
+    <body>
+        <script type="text/ecmascript">
+            var lastCurrency = "@ViewBag.CurrentCurrency";
+
+            function changePrices(sel) {
+                var toCurrency = sel.options[sel.selectedIndex].label;
+                var url = "/ProductSearch/ConversionRate/" + "@ViewBag.CurrentCurrency" + "/" + toCurrency;
+                $.get(url, function (data) {
+                    $("currencies").val(lastCurrency).attr("selected", false);
+                    $("currencies").val(toCurrency).attr("selected", true);
+                    lastCurrency = toCurrency;
+
+                    // Update new prices
+                    $("div.price_new").each(function (i) {
+                        if ($.trim($(this).text()) != "Unavailable") {
+                            var id = $(this).attr("id");
+                            // Remove "new_" from id
+                            var originalValueStr = "input.base_new[name=" + id.substring(4, id.length) + "]";
+                            var price = $(originalValueStr).attr("value");
+                            var number = Number(price) * data;
+                            $(this).html(number.toFixed(2));
+                        }
+                    });
+                });
+            }
+        </script>
+        <div id="newSearch">
+           
+                <h4 id="title">Amazon Product Search</h4>
+            
+            <div id="searchForm" class="col-lg-6">
+                <form method="post" class="form-search">
+                    <div class="col-xs-5 selectContainer">
+                <select id="indexSelection" name="searchIndex" class="form-control">
+                    @foreach (string value in ViewBag.SearchIndexValues)
+                    {
+                        <option value="@value">@value</option>
+                    }
+                </select>
+                    </div>
+                     <div class="input-group">
+                <input id="searchKeywords" type="text" name="searchKeywords"  class="form-control" placeholder="Search for..." />
+                <input id="pageNr" type="hidden" name="pageNr" value="0"/>
+                 <span class="input-group-btn">
+                            <button class="btn btn-default" type="submit" value="Search">Search!</button>
+                       </span>
+                    </div>
+            </form>
+            </div>
+        </div>
+        <div id="searchResult">
+        @if (Model == null )
+        {
+            <div id="errorMessage"><b>Error during search operation</b></div>
+        }
+        else if ( @Model.ErrorOnSearch() ) {
+            <div id="error"><b>Encountered an error: </b></div><div id="errorMessage"> @Model.ErrorMessage()</div>
+        }
+        else {
+            <br><br>
+            <label id="resulttext" for="resultTextKeywords">Results for: </label><span id="resultTextKeywords"> @Model.SearchKeywords()</span><br>
+            <label id="currentcur" >Current currency: </label>
+            <div id="currencySelection" class="col-lg-6">
+                
+                <div id="showcur" class="col-xs-5 selectContainer">
+                <select class="form-control" id="currencySelector" name="currencies" onchange="changePrices(this)">
+                                        
+                                        @foreach (var currency in ViewBag.Currencies)
+                                        {
+                                            if (currency == ViewBag.CurrentCurrency)
+                                            {
+                                                <option value="@currency" selected>@currency</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@currency">@currency</option>
+                                            }
+                                        }
+               </select>
+               </div>
+            </div><br><br>
+            <div id="resultsDiv">
+                <table class="table" id="table">
+                    <thead>
+                        <tr>
+                            <th id="resIndex">#</th>
+                            <th id="resTitle">Title</th>
+                            <th id="resNewPrice">Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < @Model.Products().Count; ++i)
+                        {
+                            var product = Model.Products()[i];
+                            var itemNr = i + 1;
+
+                            string newPrice = null;
+                            if (product.LowestNewPrice != null)
+                            {
+                                newPrice = string.Format("{0:0.00}", product.LowestNewPrice);
+                                newPrice = newPrice.Replace(",", ".");
+                            }
+                            <tr>
+                                <td>@itemNr</td>
+                                <td><a href="@product.DetailPageLink">@product.Title</a></td>
+                                <td><input type="hidden" class="base_new" name="@itemNr" value="@newPrice"/>
+                                <div class="price_new" id="@("new_" + itemNr)">@if (@newPrice == null)
+                                                                               { @("Unavailable");
+                                                                               }
+                                                                               else
+                                                                               { @newPrice;
+                                                                               }
+                                </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr id="resultTableFooter">
+                            <td colspan="4">Page: 
+                                
+                                @for (int i = 0; i <= @Model.TotalPages(); ++i)
+                                {
+
+                                    if (i != ViewBag.CurrentPage)
+                                    {
+                                        var searchStr = "/ProductSearch/Search/" + @Model.SearchIndex() + "/" + @Model.SearchKeywords() + "/" + i;
+                                                    <a href="@searchStr">@(i + 1)</a> 
+                                    }
+                                    else
+                                    {
+                                                    @(i + 1 + " ")
+                                    }
+                                }
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        }
+       </div>
+
+    </body>
+</html>
